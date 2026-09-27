@@ -1,0 +1,46 @@
+# .NET build output
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+*.dll
+*.exe
+*.pdb
+
+# NuGet
+packages/
+*.nupkg
+.nuget/
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.user
+*.suo
+*.userprefs
+*.sln.docstates
+
+# Test / coverage output
+[Tt]est[Rr]esult*/
+coverage*.xml
+*.coverage
+
+# Installer / signing artifacts (never commit certificates)
+installer/**/*.msix
+installer/**/*.msixbundle
+installer/**/*.appx
+installer/**/*.pfx
+installer/**/*.snk
+*.pfx
+*.snk
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
