@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <OutputType>Exe</OutputType>
+    <!-- Test method names are sentences; XML docs on each would repeat them. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DeskAway.Protocol\DeskAway.Protocol.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Where the build put the pinned protocol contract, and the repo root for
+         the reference-direction test. Read back through AssemblyMetadata, never
+         a guessed relative path. -->
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>DeskAwayProtocolRoot</_Parameter1>
+      <_Parameter2>$(DeskAwayProtocolRoot)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>DeskAwayProtocolCommit</_Parameter1>
+      <_Parameter2>$(DeskAwayProtocolCommit)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>RepoRoot</_Parameter1>
+      <_Parameter2>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..', '..'))</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+</Project>

@@ -33,11 +33,17 @@ auto-updated.
 .github/workflows/
   ci.yml  release.yml  security.yml
 DeskAway.sln
+Directory.Build.props     # imports build/Directory.Build.props
+Directory.Packages.props  # every NuGet version, in one place
+global.json               # pins the .NET 10 SDK; dotnet test on Testing Platform
 build/
-  Directory.Build.props   # settings shared by every project
+  Directory.Build.props   # net10.0, warnings as errors, nullable, analyzers
   version.props           # single source of the version number
-  .editorconfig           # formatting and analyzer rules
+  .editorconfig           # analyzer severities (global analyzer config)
+  protocol.props          # the pinned deskaway-protocol commit
+.protocol/<commit>/       # gitignored: contract the build downloads at that commit
 src/
+  DeskAway.Protocol/              # wire records + MessageChecker; Transport-only
   DeskAway.Desktop.App/           # UI shell
     Startup/  Views/  ViewModels/
   DeskAway.Desktop.Core/          # run orchestration, no I/O
@@ -63,7 +69,8 @@ tests/
   DeskAway.Desktop.Core.Tests/
   DeskAway.Desktop.Execution.Tests/
   DeskAway.Desktop.Transport.Tests/
-  DeskAway.Desktop.Contract.Tests/   # conformance to deskaway-protocol
+  DeskAway.Desktop.Contract.Tests/   # every protocol example, every build;
+                                     #   enum/field parity; reference direction
 installer/
   msix/  signing/  uninstall/
 docs/
@@ -77,6 +84,11 @@ file yet — several of those are whole projects not yet added to the solution.
 
 ## Conventions
 
+- `DeskAway.Protocol` is hand-written from the protocol schemas, field by field,
+  with the schema open beside it. Never loosen `Contract.Tests` to make it pass:
+  it is the only thing holding the C# to the contract (docs/adr/0002).
+- The protocol moves forward only by changing `build/protocol.props`, in a pull
+  request of its own.
 - `Core/` is pure orchestration: no process launching, no sockets, no disk.
   It is the layer that must be testable without a machine to break.
 - Every execution path goes through `Execution/`, and everything in there

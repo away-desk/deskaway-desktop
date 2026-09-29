@@ -1,0 +1,69 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Hand-written wire types and the C# port of the message checker.
+       References no other project in this solution; only Transport (and the
+       contract tests) may reference it. See docs/adr/0002. -->
+  <PropertyGroup>
+    <RootNamespace>DeskAway.Protocol</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="JsonSchema.Net" />
+  </ItemGroup>
+
+  <!--
+    The protocol contract (schemas, enums, examples) at the commit pinned in
+    build/protocol.props, downloaded once into .protocol/<commit>/. The folder is
+    keyed by commit, so moving the pin always fetches fresh, and it is only used
+    once the .complete marker exists, so an interrupted download is retried
+    rather than half-used. Anything missing fails the build: it is never
+    silently empty.
+  -->
+  <Target Name="FetchProtocolContract" BeforeTargets="PrepareForBuild" Condition="!Exists('$(DeskAwayProtocolRoot).complete')">
+    <Error Condition="!$([System.Text.RegularExpressions.Regex]::IsMatch('$(DeskAwayProtocolCommit)', '^[0-9a-f]{40}$'))"
+           Text="DeskAwayProtocolCommit in build/protocol.props must be a full 40-character commit SHA, not '$(DeskAwayProtocolCommit)'." />
+
+    <PropertyGroup>
+      <_ProtocolStaging>$([MSBuild]::NormalizeDirectory('$(DeskAwayProtocolRoot)', '..', '.staging-$(DeskAwayProtocolCommit)'))</_ProtocolStaging>
+      <_ProtocolArchiveTop>$([MSBuild]::NormalizeDirectory('$(_ProtocolStaging)', 'x', 'deskaway-protocol-$(DeskAwayProtocolCommit)'))</_ProtocolArchiveTop>
+      <_ProtocolUrl>https://github.com/away-desk/deskaway-protocol/archive/$(DeskAwayProtocolCommit).zip</_ProtocolUrl>
+    </PropertyGroup>
+
+    <RemoveDir Directories="$(_ProtocolStaging);$(DeskAwayProtocolRoot)" />
+    <Message Importance="high" Text="Downloading the protocol contract at $(DeskAwayProtocolCommit)" />
+    <DownloadFile SourceUrl="$(_ProtocolUrl)" DestinationFolder="$(_ProtocolStaging)" DestinationFileName="protocol.zip" Retries="3" RetryDelayMilliseconds="2000" />
+    <Unzip SourceFiles="$(_ProtocolStaging)protocol.zip" DestinationFolder="$(_ProtocolStaging)x" />
+
+    <Error Condition="!Exists('$(_ProtocolArchiveTop)schemas/envelope-inbound.v1.json') Or !Exists('$(_ProtocolArchiveTop)enums/message-type.json')"
+           Text="The archive for $(DeskAwayProtocolCommit) does not contain the expected contract files (looked in $(_ProtocolArchiveTop))." />
+
+    <ItemGroup>
+      <_ProtocolSchema Include="$(_ProtocolArchiveTop)schemas/**/*.json" />
+      <_ProtocolEnum Include="$(_ProtocolArchiveTop)enums/**/*.json" />
+      <_ProtocolValid Include="$(_ProtocolArchiveTop)examples/valid/**/*.json" />
+      <_ProtocolInvalid Include="$(_ProtocolArchiveTop)examples/invalid/**/*.json" />
+    </ItemGroup>
+    <Error Condition="'@(_ProtocolValid)' == '' Or '@(_ProtocolInvalid)' == ''"
+           Text="The protocol at $(DeskAwayProtocolCommit) has no examples in examples/valid or examples/invalid." />
+
+    <Copy SourceFiles="@(_ProtocolSchema)" DestinationFiles="@(_ProtocolSchema->'$(DeskAwayProtocolRoot)schemas/%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(_ProtocolEnum)" DestinationFiles="@(_ProtocolEnum->'$(DeskAwayProtocolRoot)enums/%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(_ProtocolValid)" DestinationFiles="@(_ProtocolValid->'$(DeskAwayProtocolRoot)examples/valid/%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(_ProtocolInvalid)" DestinationFiles="@(_ProtocolInvalid->'$(DeskAwayProtocolRoot)examples/invalid/%(RecursiveDir)%(Filename)%(Extension)')" />
+
+    <Touch Files="$(DeskAwayProtocolRoot).complete" AlwaysCreate="true" />
+    <RemoveDir Directories="$(_ProtocolStaging)" />
+  </Target>
+
+  <!-- The schemas are embedded so the checker never reads the disk or the
+       network at runtime. Added in a target because they only exist once
+       FetchProtocolContract has run. Empty placeholder schemas are embedded
+       too and skipped by the checker, as the JavaScript and Python ones do. -->
+  <Target Name="EmbedProtocolSchemas" AfterTargets="FetchProtocolContract" BeforeTargets="PrepareForBuild">
+    <ItemGroup>
+      <_ContractJson Include="$(DeskAwayProtocolRoot)schemas/**/*.json;$(DeskAwayProtocolRoot)enums/**/*.json" />
+      <EmbeddedResource Include="@(_ContractJson)">
+        <LogicalName>contract/$([MSBuild]::MakeRelative('$(DeskAwayProtocolRoot)', '%(FullPath)').Replace('\', '/'))</LogicalName>
+      </EmbeddedResource>
+    </ItemGroup>
+  </Target>
+</Project>

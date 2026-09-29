@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <!-- The deskaway-protocol commit this desktop is built and tested against.
+         The build downloads that commit's schemas, enums and examples into
+         .protocol/<commit>/ (see DeskAway.Protocol.csproj). Move it forward in
+         a pull request of its own, the same way the relay moves its pin. -->
+    <DeskAwayProtocolCommit>97bc57e1fed8b91cbd4552d4ebf5172c92b69035</DeskAwayProtocolCommit>
+    <DeskAwayProtocolRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..', '.protocol', '$(DeskAwayProtocolCommit)'))</DeskAwayProtocolRoot>
+  </PropertyGroup>
+</Project>

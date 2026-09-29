@@ -9,6 +9,19 @@ and this repository follows [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- DeskAway.Protocol: hand-written C# records for the envelope and every
+  control message, and MessageChecker, a C# port of the protocol's check
+  order validating against embedded schemas.
+- DeskAway.Desktop.Contract.Tests: every protocol example on every build
+  (round-trip and exact close reason), enum and field parity with the
+  schemas, a count check, and a test that only Transport references
+  DeskAway.Protocol.
+- The build downloads the protocol contract at the commit pinned in
+  build/protocol.props. No submodule.
+- .NET 10 via global.json, which CI now installs from; Directory.Build.props
+  with warnings as errors, nullable, analyzers; central package versions.
+- ADR 0001 (.NET 10) and ADR 0002 (hand-written wire types, downloaded
+  contract).
 - Source-of-truth rule in AGENT.md: the two V1 plan files in the parent
   folder are authoritative, changes land there first, and neither is edited
   without explicit approval.
