@@ -4,8 +4,10 @@ One file per decision made about this component. An ADR records *why* a choice
 was made, so nobody has to reverse-engineer the reasoning from the code — or
 worse, undo it without knowing what it was for.
 
-Nothing is recorded here yet. The first ADR arrives with the first decision worth
-arguing about.
+| ADR | Decision |
+| --- | --- |
+| [0001](./0001-target-dotnet-10.md) | Target .NET 10 LTS |
+| [0002](./0002-hand-written-wire-types-and-downloaded-contract.md) | Hand-written wire types in DeskAway.Protocol, held to a contract downloaded at a pinned commit |
 
 ## Format
 

@@ -45,13 +45,22 @@ command runs.
 **`Transport/`** — `RelayConnection` plus `Handlers`, `Heartbeat`, and `Reconnect`
 for the laptop that closed its lid.
 
+**`DeskAway.Protocol`** — the wire contract in C#: hand-written records for every
+envelope and payload, and `MessageChecker`, a port of the protocol's check order
+(size, parse, version, relay block, type, envelope, payload) validating against
+schemas embedded at build time. The schemas and examples come from the
+`deskaway-protocol` commit pinned in `build/protocol.props`; the build downloads
+them into `.protocol/<commit>/`. It is a shared contract rather than a desktop
+layer, hence the name, which is also the NuGet package it becomes on Day 20.
+
 **`Pairing/`**, **`Storage/`** (local state and credentials), **`Telemetry/`**,
 **`Updater/`**, and **`App/`** (the UI shell: `Views`, `ViewModels`, `Startup`).
 
 ### Flow of one command step
 
 1. `Transport/RelayConnection` receives a `command-request` frame and a handler in
-   `Transport/Handlers` deserializes it against the protocol schema.
+   `Transport/Handlers` passes it through `DeskAway.Protocol`'s `MessageChecker`,
+   which validates it against the protocol schema and returns a typed record.
 2. The handler hands a plain domain object to `Core` — **not** the frame. Transport
    types stop at this boundary.
 3. `Core/AgentLoop` takes the step and asks `Core/Scope` whether it is inside this
@@ -92,6 +101,11 @@ never reach a process launcher without passing through the logic in between.
 
 Two supporting rules:
 
+- **Only `Transport` references `DeskAway.Protocol`, and `DeskAway.Protocol`
+  references nothing in this solution.** Wire records are frames; a frame is
+  translated to a domain object at the `Transport` edge, so `Core` and
+  `Execution` never see one. `Contract.Tests` fails if any other project
+  references it.
 - **Handlers translate, they do not decide.** A `Transport` handler converts a
   frame to a domain object and hands it on. Any branch on whether to run something
   belongs in `Core`.
@@ -105,7 +119,7 @@ Two supporting rules:
 | **outbound** | `deskaway-relay` | WebSocket, dialled out and held open |
 | **outbound** | update service | HTTPS, via `Updater/` |
 | **local** | the machine itself | processes, filesystem, via `Execution/` |
-| — | `deskaway-protocol` | build-time only; verified by `Contract.Tests` |
+| — | `deskaway-protocol` | build-time only: schemas and examples downloaded at the commit pinned in `build/protocol.props`; the hand-written records are held to them by `Contract.Tests` on every build |
 
 There is no inbound direction at all. It never talks to the phone, never to
 `deskaway-agent`, and never to a model provider — the relay is its only peer.

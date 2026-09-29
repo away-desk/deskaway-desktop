@@ -95,35 +95,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Are there any projects yet?
-        id: state
-        run: |
-          projects=$(find src tests -type f -name '*.csproj' 2>/dev/null | wc -l)
-          if [ "$projects" -gt 0 ]; then
-            echo 'ready=true' >> "$GITHUB_OUTPUT"
-          else
-            echo 'ready=false' >> "$GITHUB_OUTPUT"
-            echo '::notice::no .csproj files exist, so the solution builds nothing. Delete this guard step once projects are added.'
-          fi
-
       - name: Set up .NET
-        if: steps.state.outputs.ready == 'true'
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          global-json-file: global.json
 
       - name: Restore
-        if: steps.state.outputs.ready == 'true'
         run: dotnet restore
 
       - name: Format
-        if: steps.state.outputs.ready == 'true'
         run: dotnet format --verify-no-changes
 
       - name: Build
-        if: steps.state.outputs.ready == 'true'
         run: dotnet build --no-restore --configuration Release
 
       - name: Test
-        if: steps.state.outputs.ready == 'true'
+        # Every protocol example, every build (docs/adr/0002). The build step above
+        # downloads the contract at the commit pinned in build/protocol.props.
         run: dotnet test --no-build --configuration Release

@@ -1,0 +1,7 @@
+# Global analyzer configuration for every project, passed to the compiler by
+# build/Directory.Build.props. Warnings are errors, so every rule here is a
+# decision: raise one deliberately, and say why beside it.
+is_global = true
+
+# Test method names read as sentences, with underscores.
+dotnet_diagnostic.CA1707.severity = none

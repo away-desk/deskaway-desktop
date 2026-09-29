@@ -9,20 +9,20 @@ than its features.
 
 ## Status
 
-**Early development, nothing works yet.**
+**Early development. Nothing executes yet.**
 
-The solution file and every project directory are in place but empty — no
-`.csproj` exists yet, so the solution references nothing and does not build.
-`PowerShellRunner.cs` and `RelayConnection.cs` are empty files. Nothing
-executes, and nothing is signed or packaged.
+The one thing that builds is the wire contract: `DeskAway.Protocol`, with
+hand-written types for every protocol message and a C# port of the message
+checker, and `Contract.Tests`, which holds them to `deskaway-protocol` on every
+build. Every other project directory is still empty. `PowerShellRunner.cs` and
+`RelayConnection.cs` are empty files. Nothing executes, and nothing is signed or
+packaged.
 
 ## Running locally
 
-Not yet possible: there are no project files, so `dotnet build` has nothing
-to compile.
-
-You will need a recent .NET SDK on Windows. The intended path, once the
-projects exist:
+You need the .NET 10 SDK on Windows (pinned in `global.json`). What runs
+today is the build and the contract tests; the first build downloads the
+protocol contract from GitHub. The intended path, once the app exists:
 
 ```sh
 git clone https://github.com/away-desk/deskaway-desktop.git
@@ -38,7 +38,8 @@ dotnet run --project src/DeskAway.Desktop.App      # UI shell
 Target is under ten minutes on a cold clone, restore included. A local
 `deskaway-relay` is needed to pair and run anything end to end, but building
 and testing must never require one — that is what `Core/` being I/O-free
-buys. `docs/architecture.md` will carry the detail; it is currently empty.
+buys. `docs/local-setup.md` has the detail, including how the protocol
+contract is pinned.
 
 **A warning worth keeping here:** this component runs commands on your own
 machine. Once it works, do not point a development build at a real desktop

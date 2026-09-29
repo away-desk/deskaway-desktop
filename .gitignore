@@ -47,3 +47,6 @@ installer/**/*.snk
 # OS
 .DS_Store
 Thumbs.db
+
+# The protocol contract the build downloads at the pinned commit (build/protocol.props)
+.protocol/

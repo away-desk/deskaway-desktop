@@ -1,0 +1,5 @@
+<Project>
+  <!-- MSBuild finds this file by walking up from each project. The settings
+       live in build/ as the repo structure lays out; this only imports them. -->
+  <Import Project="build/Directory.Build.props" />
+</Project>
