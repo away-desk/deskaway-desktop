@@ -91,6 +91,25 @@ file yet — several of those are whole projects not yet added to the solution.
 - Never commit signing material. `.gitignore` blocks `*.pfx` and `*.snk`;
   keep it that way.
 
+## Rule: UI colours and font
+
+Every screen, window and tray icon in the Windows app follows
+`../color-theme.md` (in the `DeskAway` folder that holds all the repos). It is
+the only reference for colour.
+
+- Declare its values once as theme resources (one dark, one light dictionary)
+  and reference them by key. Never write a hex or named colour in a view.
+- Dark is the main theme; light follows the Windows app-mode setting.
+- Green, amber and red are status colours only — done, partial, irreversible.
+  Never on buttons, links or decoration, and always shown with a word or icon.
+- The typeface is **Wallpoet**, bundled with the app (never fetched at run
+  time) and exposed as a font resource. Use it for headings, labels, buttons
+  and numbers; long text and command output use the system UI and monospace
+  fonts for readability.
+- Sizes are relative: use the platform's scalable units and layout
+  (effective pixels, star/auto sizing, text scaling) — never absolute pixel
+  values that ignore Windows display scaling or text size.
+
 ## Rule: keep README.md current
 
 The README is the one file a newcomer is guaranteed to read. Revisit it
